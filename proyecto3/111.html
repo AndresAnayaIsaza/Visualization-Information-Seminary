@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400italic,600italic,700italic,200,300,400,600,700,900">
+  <link rel="stylesheet" type="text/css" href="333.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+
+
+</head>
+<body>
+  <div id="content">
+<h1>Resultados plebiscito 2016</h1>
+  <select id="menu">
+  <option>Voto SI</option>
+  <option>Voto NO</option>
+  <option>Se Abstuvo</option>
+  <option>No Validos</option>
+  </select>
+
+<p id="unit">Porcentaje de votación sobre el total del censo electoral</p>
+
+<div id="chart"></div>
+<p>Fuente:Datos publicados por http://lasillavacia.com/hagame-el-cruce/asi-es-el-pais-que-voto-no-58201</p>
+</div>
+
+<script src="222.js"></script>
+<script>
+
+var map = d3.map(),
+    barchart;
+
+d3.csv("data.csv", function(error, data) {
+
+  data = d3.nest()
+      .key(function(d){ return d.variable; })
+      .entries(data);
+
+  data.forEach(function(d){
+    d.value = +d.value;
+    d.values.sort(function(a, b){ return d3.ascending(+a.value, +b.value); });
+    map.set(d.key, d.values);
+  });
+
+  barchart = d3.svg.barchart()
+      .margin({top: 0, right: 10, bottom: 40, left: 40})
+      .tickFormat(d3.format(",.0f"))
+      .x(function(d){ return d.country; })
+      .y(function(d){ return d.value; });
+
+  d3.select("#chart")
+      .datum(map.get("Poverty rate"))
+      .call(barchart);
+
+});
+
+
+d3.select("#menu").on("change", function() {
+
+  d3.select("#chart")
+      .datum(map.get(this.value))
+      .call(barchart);
+
+  var unit;
+  var selectedVariable = document.getElementById("menu").value;
+  switch (selectedVariable)
+      {
+      case "Voto SI": unit = "En orden ascedente los departamentos que votaron por el SI"; break;
+      case "Voto NO": unit = "En orden ascedente los departamentos que votaron por el NO"; break;
+      case "Se Abstuvo": unit = "En orden ascedente los departamentos que presentaron menor a mayor abstencion"; break;
+      }
+  d3.select("#unit")
+      .html(unit);
+
+});
+
+d3.select(self.frameElement).style("height", "560px");
+
+</script>
+
+</body>
+</html>
